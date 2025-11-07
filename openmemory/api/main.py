@@ -35,7 +35,7 @@ def create_default_user():
                 id=uuid4(),
                 user_id=USER_ID,
                 name="Default User",
-                created_at=datetime.datetime.now(datetime.UTC)
+                created_at=datetime.datetime.now(datetime.timezone.utc)
             )
             db.add(user)
             db.commit()
@@ -63,8 +63,8 @@ def create_default_app():
             id=uuid4(),
             name=DEFAULT_APP_ID,
             owner_id=user.id,
-            created_at=datetime.datetime.now(datetime.UTC),
-            updated_at=datetime.datetime.now(datetime.UTC),
+            created_at=datetime.datetime.now(datetime.timezone.utc),
+            updated_at=datetime.datetime.now(datetime.timezone.utc),
         )
         db.add(app)
         db.commit()
