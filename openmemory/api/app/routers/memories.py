@@ -57,44 +57,44 @@ def update_memory_state(db: Session, memory_id: UUID, new_state: MemoryState, us
     return memory
 
 
-def get_accessible_memory_ids(db: Session, app_id: UUID) -> Set[UUID]:
-    """
-    Get the set of memory IDs that the app has access to based on app-level ACL rules.
-    Returns all memory IDs if no specific restrictions are found.
-    """
-    # Get app-level access controls
-    app_access = db.query(AccessControl).filter(
-        AccessControl.subject_type == "app",
-        AccessControl.subject_id == app_id,
-        AccessControl.object_type == "memory"
-    ).all()
+# def get_accessible_memory_ids(db: Session, app_id: UUID) -> Set[UUID]:
+#     """
+#     Get the set of memory IDs that the app has access to based on app-level ACL rules.
+#     Returns all memory IDs if no specific restrictions are found.
+#     """
+#     # Get app-level access controls
+#     app_access = db.query(AccessControl).filter(
+#         AccessControl.subject_type == "app",
+#         AccessControl.subject_id == app_id,
+#         AccessControl.object_type == "memory"
+#     ).all()
 
-    # If no app-level rules exist, return None to indicate all memories are accessible
-    if not app_access:
-        return None
+#     # If no app-level rules exist, return None to indicate all memories are accessible
+#     if not app_access:
+#         return None
 
-    # Initialize sets for allowed and denied memory IDs
-    allowed_memory_ids = set()
-    denied_memory_ids = set()
+#     # Initialize sets for allowed and denied memory IDs
+#     allowed_memory_ids = set()
+#     denied_memory_ids = set()
 
-    # Process app-level rules
-    for rule in app_access:
-        if rule.effect == "allow":
-            if rule.object_id:  # Specific memory access
-                allowed_memory_ids.add(rule.object_id)
-            else:  # All memories access
-                return None  # All memories allowed
-        elif rule.effect == "deny":
-            if rule.object_id:  # Specific memory denied
-                denied_memory_ids.add(rule.object_id)
-            else:  # All memories denied
-                return set()  # No memories accessible
+#     # Process app-level rules
+#     for rule in app_access:
+#         if rule.effect == "allow":
+#             if rule.object_id:  # Specific memory access
+#                 allowed_memory_ids.add(rule.object_id)
+#             else:  # All memories access
+#                 return None  # All memories allowed
+#         elif rule.effect == "deny":
+#             if rule.object_id:  # Specific memory denied
+#                 denied_memory_ids.add(rule.object_id)
+#             else:  # All memories denied
+#                 return set()  # No memories accessible
 
-    # Remove denied memories from allowed set
-    if allowed_memory_ids:
-        allowed_memory_ids -= denied_memory_ids
+#     # Remove denied memories from allowed set
+#     if allowed_memory_ids:
+#         allowed_memory_ids -= denied_memory_ids
 
-    return allowed_memory_ids
+#     return allowed_memory_ids
 
 
 # List all memories with filtering
@@ -213,7 +213,6 @@ class CreateMemoryRequest(BaseModel):
     user_id: str
     text: str
     metadata: dict = {}
-    infer: bool = True
     app: str = "openmemory"
 
 
@@ -262,8 +261,7 @@ async def create_memory(
             metadata={
                 "source_app": "openmemory",
                 "mcp_client": request.app,
-            },
-            infer=request.infer
+            }
         )
         
         # Log the response for debugging

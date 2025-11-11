@@ -14,7 +14,7 @@ class LLMConfig(BaseModel):
     temperature: float = Field(..., description="Temperature setting for the model")
     max_tokens: int = Field(..., description="Maximum tokens to generate")
     api_key: Optional[str] = Field(None, description="API key or 'env:API_KEY' to use environment variable")
-    ollama_base_url: Optional[str] = Field(None, description="Base URL for Ollama server (e.g., http://host.docker.internal:11434)")
+    openai_base_url: Optional[str] = Field(None, description="Base URL for OpenAI-compatible APIs")
 
 class LLMProvider(BaseModel):
     provider: str = Field(..., description="LLM provider name")
@@ -23,7 +23,7 @@ class LLMProvider(BaseModel):
 class EmbedderConfig(BaseModel):
     model: str = Field(..., description="Embedder model name")
     api_key: Optional[str] = Field(None, description="API key or 'env:API_KEY' to use environment variable")
-    ollama_base_url: Optional[str] = Field(None, description="Base URL for Ollama server (e.g., http://host.docker.internal:11434)")
+    openai_base_url: Optional[str] = Field(None, description="Base URL for OpenAI-compatible APIs")
 
 class EmbedderProvider(BaseModel):
     provider: str = Field(..., description="Embedder provider name")
@@ -152,9 +152,22 @@ async def update_configuration(config: ConfigSchema, db: Session = Depends(get_d
             updated_config["openmemory"] = {}
         updated_config["openmemory"].update(config.openmemory.dict(exclude_none=True))
     
-    # Update mem0 settings
-    updated_config["mem0"] = config.mem0.dict(exclude_none=True)
     
+    def deep_update(source, overrides):
+        for key, value in overrides.items():
+            if isinstance(value, dict) and key in source and isinstance(source[key], dict):
+                source[key] = deep_update(source[key], value)
+            else:
+                source[key] = value
+        return source
+
+    # Update mem0 settings
+    updated_config["mem0"] = config.mem0.dict(exclude_none=True, exclude_unset=True)
+     
+    updated_config = deep_update(current_config, updated_config)
+    save_config_to_db(db, updated_config)
+    reset_memory_client()
+    return updated_config
 
 @router.patch("/", response_model=ConfigSchema)
 async def patch_configuration(config_update: ConfigSchema, db: Session = Depends(get_db)):

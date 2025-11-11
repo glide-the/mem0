@@ -21,26 +21,29 @@ class SupportChatbot:
             "llm": {
                 "provider": "openai",
                 "config": {
-                    "model": "glm-4-flash-250414",
+                    "model": "deepseek-chat",
                     "temperature": 0.1,
                     "max_tokens": 2000,
                 },
             },
+            
             "embedder": {
                 "provider": "openai",
                 "config": {
                     "model": "qwen3-embedding",
-                    "openai_base_url": "http://localhost/v1",
-                    "api_key": "gpustack_b0af60452b6eb71c_e8e6a2a6c779934a140a74749ddfa5fd",
-                    "embedding_dims": 4096
-                },
+                    "api_key": "gpustack_dce0bd7c9fe85b3c_ce9df245a8bd278bc5ec07656ef0bd75",
+                    "openai_base_url": "http://10.0.0.49:9090/v1",
+                    "embedding_dims": 4096,
+                }
             },
             "vector_store": {
-               "provider": "qdrant",
-               "config": { 
-                   "collection_name": "memories",
-                   "embedding_model_dims": 4096
-               }
+                "provider": "qdrant",
+                "config": {
+                    "host": "localhost",
+                    "port": 6333,
+                    "collection_name": "memories",
+                    "embedding_model_dims": 4096
+                }
             },
                 
             "graph_store": {
@@ -51,7 +54,7 @@ class SupportChatbot:
 
         self.client = OpenAI(
             api_key=os.environ.get('OPENAI_API_KEY'),
-            base_url="http://localhost/v1"
+            base_url=os.environ.get('OPENAI_BASE_URL')
         ) 
         self.memory = Memory.from_config(self.config)
 
@@ -117,7 +120,7 @@ class SupportChatbot:
         print(prompt)
         # Generate response using Claude
         response = self.client.chat.completions.create(
-            model="qwen3",
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=2000,
             temperature=0.1,

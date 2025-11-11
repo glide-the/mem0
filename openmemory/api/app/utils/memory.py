@@ -33,7 +33,6 @@ import os
 import socket
 
 from app.database import SessionLocal
-from app.models import Config as ConfigModel
 
 from mem0 import Memory
 
@@ -310,6 +309,7 @@ def get_memory_client(custom_instructions: str = None):
         
         # Load configuration from database
         try:
+            from app.models import Config as ConfigModel
             db = SessionLocal()
             db_config = db.query(ConfigModel).filter(ConfigModel.key == "main").first()
             

@@ -11,6 +11,30 @@ Guidelines:
 Here are the details of the task:
 """
 
+MEMORY_DIS_PROMPT = """
+You are a **Professional Memory Distiller**, specialized in extracting and compressing the most essential information from long human–AI conversations.
+
+Your primary role is to analyze a given dialogue history between a user and an AI assistant, and condense it into a concise, meaningful **structured summary**.
+
+# [IMPORTANT]: Scope of Analysis — You must base your summary **only** on the dialogue history provided as input. Do **not** invent events, emotions, or entities that are not supported by the text. Do **not** use any external knowledge to “fill in” missing details.
+# [IMPORTANT]: Small Talk / Low-Signal Filter — If the dialogue is dominated by casual small talk, repetitive content, or lacks clear emotional shifts and meaningful intent, you **must not** generate an event summary. In this case, return an **empty result** (for example, an empty object `{}` or an equivalent representation).
+# [IMPORTANT]: Extraction Threshold — A conversation should be treated as a **“distill-worthy event”** only if it contains at least one of the following: clear, strong emotions (e.g., intense anxiety, anger, joy, frustration, relief, etc.); a clear intent or request (e.g., venting, seeking help, making decisions, planning); or distinct and repeatedly referenced key persons, entities, or topics. Only when at least one of these conditions is met should you produce a structured summary.
+
+Types of Information to Extract:
+
+- **Event Summary:** Summarize the core topic(s) and key developments of the conversation. Focus on describing what happened, what the user cares about, and which issues the dialogue revolves around.
+- **Emotional Tone:** Capture the main emotional trajectory of the user throughout the dialogue (e.g., “anxious and seeking reassurance,” “calm and analytical discussion,” “excited and hopeful”). If there is a clear emotional shift (e.g., from frustration to relief), briefly note this transition.
+- **Key Persons / Entities:** Extract persons or entities that are mentioned multiple times and are closely tied to the evolution of the conversation. Examples include family members, colleagues, character names, project names, products, locations, and organizations. Briefly describe how each key person or entity relates to the main topic.
+- **Follow-up Tasks:** Identify any items that the user explicitly or implicitly indicates should be followed up on later or remembered for the future. Examples include topics the user wants to revisit in future conversations, plans or actions the user intends to take but has not yet completed, and points the AI should remember or proactively check in on in later sessions.
+
+Output Expectations:
+
+- Your output must be a **structured** and **concise** summary, not a verbatim transcript.  
+- As long as the conversation passes the extraction threshold, your summary should enable a future agent—**without re-reading the original dialogue**—to understand what happened, grasp the user’s overall emotional state, know which persons or entities are central, and see clearly which tasks or topics should be followed up on later.  
+- If the conversation does **not** meet the extraction threshold (for example, it is mostly small talk or noise), you **must** return an empty result.
+
+"""
+
 FACT_RETRIEVAL_PROMPT = f"""You are a Personal Information Organizer, specialized in accurately storing facts, user memories, and preferences. Your primary role is to extract relevant pieces of information from conversations and organize them into distinct, manageable facts. This allows for easy retrieval and personalization in future interactions. Below are the types of information you need to focus on and the detailed instructions on how to handle the input data.
 
 Types of Information to Remember:
@@ -361,41 +385,40 @@ You are a memory summarization system that records and preserves the complete in
 
 ```
 ## Summary of the agent's execution history
+# **Task Objective**: Scrape blog post titles and full content from the OpenAI blog.
+# **Progress Status**: 10% complete — 5 out of 50 blog posts processed.
 
-**Task Objective**: Scrape blog post titles and full content from the OpenAI blog.
-**Progress Status**: 10% complete — 5 out of 50 blog posts processed.
+# 1. **Agent Action**: Opened URL "https://openai.com"  
+#    **Action Result**:  
+#       "HTML Content of the homepage including navigation bar with links: 'Blog', 'API', 'ChatGPT', etc."  
+#    **Key Findings**: Navigation bar loaded correctly.  
+#    **Navigation History**: Visited homepage: "https://openai.com"  
+#    **Current Context**: Homepage loaded; ready to click on the 'Blog' link.
 
-1. **Agent Action**: Opened URL "https://openai.com"  
-   **Action Result**:  
-      "HTML Content of the homepage including navigation bar with links: 'Blog', 'API', 'ChatGPT', etc."  
-   **Key Findings**: Navigation bar loaded correctly.  
-   **Navigation History**: Visited homepage: "https://openai.com"  
-   **Current Context**: Homepage loaded; ready to click on the 'Blog' link.
+# 2. **Agent Action**: Clicked on the "Blog" link in the navigation bar.  
+#    **Action Result**:  
+#       "Navigated to 'https://openai.com/blog/' with the blog listing fully rendered."  
+#    **Key Findings**: Blog listing shows 10 blog previews.  
+#    **Navigation History**: Transitioned from homepage to blog listing page.  
+#    **Current Context**: Blog listing page displayed.
 
-2. **Agent Action**: Clicked on the "Blog" link in the navigation bar.  
-   **Action Result**:  
-      "Navigated to 'https://openai.com/blog/' with the blog listing fully rendered."  
-   **Key Findings**: Blog listing shows 10 blog previews.  
-   **Navigation History**: Transitioned from homepage to blog listing page.  
-   **Current Context**: Blog listing page displayed.
+# 3. **Agent Action**: Extracted the first 5 blog post links from the blog listing page.  
+#    **Action Result**:  
+#       "[ '/blog/chatgpt-updates', '/blog/ai-and-education', '/blog/openai-api-announcement', '/blog/gpt-4-release', '/blog/safety-and-alignment' ]"  
+#    **Key Findings**: Identified 5 valid blog post URLs.  
+#    **Current Context**: URLs stored in memory for further processing.
 
-3. **Agent Action**: Extracted the first 5 blog post links from the blog listing page.  
-   **Action Result**:  
-      "[ '/blog/chatgpt-updates', '/blog/ai-and-education', '/blog/openai-api-announcement', '/blog/gpt-4-release', '/blog/safety-and-alignment' ]"  
-   **Key Findings**: Identified 5 valid blog post URLs.  
-   **Current Context**: URLs stored in memory for further processing.
+# 4. **Agent Action**: Visited URL "https://openai.com/blog/chatgpt-updates"  
+#    **Action Result**:  
+#       "HTML content loaded for the blog post including full article text."  
+#    **Key Findings**: Extracted blog title "ChatGPT Updates – March 2025" and article content excerpt.  
+#    **Current Context**: Blog post content extracted and stored.
 
-4. **Agent Action**: Visited URL "https://openai.com/blog/chatgpt-updates"  
-   **Action Result**:  
-      "HTML content loaded for the blog post including full article text."  
-   **Key Findings**: Extracted blog title "ChatGPT Updates – March 2025" and article content excerpt.  
-   **Current Context**: Blog post content extracted and stored.
-
-5. **Agent Action**: Extracted blog title and full article content from "https://openai.com/blog/chatgpt-updates"  
-   **Action Result**:  
-      "{ 'title': 'ChatGPT Updates – March 2025', 'content': 'We\'re introducing new updates to ChatGPT, including improved browsing capabilities and memory recall... (full content)' }"  
-   **Key Findings**: Full content captured for later summarization.  
-   **Current Context**: Data stored; ready to proceed to next blog post.
+# 5. **Agent Action**: Extracted blog title and full article content from "https://openai.com/blog/chatgpt-updates"  
+#    **Action Result**:  
+#       "{ 'title': 'ChatGPT Updates – March 2025', 'content': 'We\'re introducing new updates to ChatGPT, including improved browsing capabilities and memory recall... (full content)' }"  
+#    **Key Findings**: Full content captured for later summarization.  
+#    **Current Context**: Data stored; ready to proceed to next blog post.
 
 ... (Additional numbered steps for subsequent actions)
 ```

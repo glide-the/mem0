@@ -286,7 +286,6 @@ class Memory(MemoryBase):
         agent_id: Optional[str] = None,
         run_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        infer: bool = True,
         memory_type: Optional[str] = None,
         prompt: Optional[str] = None,
     ):
@@ -303,9 +302,6 @@ class Memory(MemoryBase):
             agent_id (str, optional): ID of the agent creating the memory. Defaults to None.
             run_id (str, optional): ID of the run creating the memory. Defaults to None.
             metadata (dict, optional): Metadata to store with the memory. Defaults to None.
-            infer (bool, optional): If True (default), an LLM is used to extract key facts from
-                'messages' and decide whether to add, update, or delete related memories.
-                If False, 'messages' are added as raw memories directly.
             memory_type (str, optional): Specifies the type of memory. Currently, only
                 `MemoryType.PROCEDURAL.value` ("procedural_memory") is explicitly handled for
                 creating procedural memories (typically requires 'agent_id'). Otherwise, memories
@@ -367,7 +363,7 @@ class Memory(MemoryBase):
             messages = parse_vision_messages(messages)
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future1 = executor.submit(self._add_to_vector_store, messages, processed_metadata, effective_filters, infer)
+            future1 = executor.submit(self._add_to_vector_store, messages, processed_metadata, effective_filters)
             future2 = executor.submit(self._add_to_graph, messages, effective_filters)
 
             concurrent.futures.wait([future1, future2])
@@ -383,43 +379,8 @@ class Memory(MemoryBase):
 
         return {"results": vector_store_result}
 
-    def _add_to_vector_store(self, messages, metadata, filters, infer):
-        if not infer:
-            returned_memories = []
-            for message_dict in messages:
-                if (
-                    not isinstance(message_dict, dict)
-                    or message_dict.get("role") is None
-                    or message_dict.get("content") is None
-                ):
-                    logger.warning(f"Skipping invalid message format: {message_dict}")
-                    continue
-
-                if message_dict["role"] == "system":
-                    continue
-
-                per_msg_meta = deepcopy(metadata)
-                per_msg_meta["role"] = message_dict["role"]
-
-                actor_name = message_dict.get("name")
-                if actor_name:
-                    per_msg_meta["actor_id"] = actor_name
-
-                msg_content = message_dict["content"]
-                msg_embeddings = self.embedding_model.embed(msg_content, "add")
-                mem_id = self._create_memory(msg_content, msg_embeddings, per_msg_meta)
-
-                returned_memories.append(
-                    {
-                        "id": mem_id,
-                        "memory": msg_content,
-                        "event": "ADD",
-                        "actor_id": actor_name if actor_name else None,
-                        "role": message_dict["role"],
-                    }
-                )
-            return returned_memories
-
+    def _add_to_vector_store(self, messages, metadata, filters):
+   
         parsed_messages = parse_messages(messages)
 
         if self.config.custom_fact_extraction_prompt:

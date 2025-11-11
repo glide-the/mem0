@@ -5,6 +5,7 @@ from mem0.configs.prompts import (
     FACT_RETRIEVAL_PROMPT,
     USER_MEMORY_EXTRACTION_PROMPT,
     AGENT_MEMORY_EXTRACTION_PROMPT,
+    MEMORY_DIS_PROMPT,
 )
 
 
@@ -22,6 +23,11 @@ def get_fact_retrieval_messages(message, is_agent_memory=False):
         return AGENT_MEMORY_EXTRACTION_PROMPT, f"Input:\n{message}"
     else:
         return USER_MEMORY_EXTRACTION_PROMPT, f"Input:\n{message}"
+    
+# def get_summarization_messages():
+#     """Get summarization messages."""
+#     return MEMORY_DIS_PROMPT
+
 
 
 def get_fact_retrieval_messages_legacy(message):

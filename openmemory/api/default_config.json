@@ -1,20 +1,41 @@
 {
-    "mem0": {
-        "llm": {
-            "provider": "openai",
-            "config": {
-                "model": "gpt-4o-mini",
-                "temperature": 0.1,
-                "max_tokens": 2000,
-                "api_key": "env:OPENAI_API_KEY"
-            }
-        },
-        "embedder": {
-            "provider": "openai",
-            "config": {
-                "model": "text-embedding-3-small",
-                "api_key": "env:OPENAI_API_KEY"
-            }
-        }
+   
+  "mem0": {
+    "llm": {
+      "provider": "openai",
+      "config": {
+        "model": "deepseek-chat",
+        "temperature": 0.1,
+        "max_tokens": 2000,
+        "api_key": "env:OPENAI_API_KEY"
+      }
+    },
+    "embedder": {
+      "provider": "openai",
+      "config": {
+        "model": "qwen3-embedding",
+        "api_key": "gpustack_dce0bd7c9fe85b3c_ce9df245a8bd278bc5ec07656ef0bd75",
+        "openai_base_url": "http://10.0.0.49:9090/v1",
+        "embedding_dims": 4096
+      }
+    },
+    "vector_store": {
+      "provider": "qdrant",
+      "config": {
+        "host": "localhost",
+        "port": 6333,
+        "collection_name": "memories",
+        "embedding_model_dims": 4096
+      }
+    },
+    "graph_store": {
+      "provider": "neo4j",
+      "config": {
+        "url": "env:NEO4J_URI",
+        "username": "env:NEO4J_USERNAME",
+        "password": "env:NEO4J_PASSWORD",
+        "database": "neo4j"
+      }
     }
+  }
 } 

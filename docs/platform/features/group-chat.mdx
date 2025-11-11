@@ -60,8 +60,7 @@ messages = [
 
 response = client.add(
     messages,
-    run_id="group_chat_1",
-    infer=True
+    run_id="group_chat_1"
 )
 print(response)
 ```
@@ -225,8 +224,7 @@ Group chat also supports async processing for improved performance:
 # Group chat with async mode
 response = client.add(
     messages,
-    run_id="groupchat_async",
-    infer=True,
+    run_id="groupchat_async"
     async_mode=True
 )
 print(response)

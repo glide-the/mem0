@@ -207,6 +207,8 @@ class MemoryGraph:
                 {"role": "user", "content": data},
             ],
             tools=_tools,
+            top_p=0.1,
+            temperature=0,
         )
 
         entity_type_map = {}
@@ -258,6 +260,8 @@ class MemoryGraph:
         extracted_entities = self.llm.generate_response(
             messages=messages,
             tools=_tools,
+            top_p=0.1,
+            temperature=0,
         )
 
         entities = []
@@ -344,6 +348,8 @@ class MemoryGraph:
                 {"role": "user", "content": user_prompt},
             ],
             tools=_tools,
+            top_p=0.1,
+            temperature=0,
         )
 
         to_be_deleted = []
