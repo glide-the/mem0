@@ -155,8 +155,7 @@ def test_thinking_tags_sync():
     result = memory._add_to_vector_store(
         messages=[{"role": "user", "content": "I love sci-fi movies"}],
         metadata={}, 
-        filters={}, 
-        infer=True
+        filters={}
     )
     
     assert len(result) == 1
@@ -191,8 +190,7 @@ async def test_async_thinking_tags_async():
         result = await memory._add_to_vector_store(
             messages=[{"role": "user", "content": "I love sci-fi movies"}],
             metadata={}, 
-            effective_filters={}, 
-            infer=True
+            effective_filters={}
         )
     
     assert len(result) == 1

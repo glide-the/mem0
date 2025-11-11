@@ -50,7 +50,7 @@ class TestAddToVectorStoreErrors:
         # Execute
         with caplog.at_level(logging.ERROR):
             result = mock_memory._add_to_vector_store(
-                messages=[{"role": "user", "content": "test"}], metadata={}, filters={}, infer=True
+                messages=[{"role": "user", "content": "test"}], metadata={}, filters={}
             )
 
         # Verify
@@ -69,7 +69,7 @@ class TestAddToVectorStoreErrors:
         # Execute
         with caplog.at_level(logging.WARNING):
             result = mock_memory._add_to_vector_store(
-                messages=[{"role": "user", "content": "test"}], metadata={}, filters={}, infer=True
+                messages=[{"role": "user", "content": "test"}], metadata={}, filters={}
             )
 
         # Verify
@@ -103,7 +103,7 @@ class TestAsyncAddToVectorStoreErrors:
 
         with caplog.at_level(logging.ERROR):
             result = await mock_async_memory._add_to_vector_store(
-                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}, infer=True
+                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}
             )
         assert mock_async_memory.llm.generate_response.call_count == 1
         assert result == []
@@ -121,7 +121,7 @@ class TestAsyncAddToVectorStoreErrors:
 
         with caplog.at_level(logging.WARNING):
             result = await mock_async_memory._add_to_vector_store(
-                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}, infer=True
+                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}
             )
 
         assert result == []
