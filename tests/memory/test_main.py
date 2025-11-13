@@ -121,7 +121,7 @@ class TestAsyncAddToVectorStoreErrors:
 
         with caplog.at_level(logging.WARNING):
             result = await mock_async_memory._add_to_vector_store(
-                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}
+                messages=[{"role": "user", "content": "test"}], metadata={}, effective_filters={}, infer=True
             )
 
         assert result == []

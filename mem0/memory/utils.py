@@ -9,7 +9,7 @@ from mem0.configs.prompts import (
 )
 
 
-def get_fact_retrieval_messages(message, is_agent_memory=False):
+def get_fact_retrieval_messages(message, metadata, is_agent_memory=False):
     """Get fact retrieval messages based on the memory type.
     
     Args:
@@ -21,8 +21,9 @@ def get_fact_retrieval_messages(message, is_agent_memory=False):
     """
     if is_agent_memory:
         return AGENT_MEMORY_EXTRACTION_PROMPT, f"Input:\n{message}"
-    else:
-        return USER_MEMORY_EXTRACTION_PROMPT, f"Input:\n{message}"
+    else: 
+        
+        return USER_MEMORY_EXTRACTION_PROMPT.replace('user_id', metadata.get("user_id")), f"Input:\n{message}"
     
 # def get_summarization_messages():
 #     """Get summarization messages."""
@@ -39,11 +40,11 @@ def parse_messages(messages):
     response = ""
     for msg in messages:
         if msg["role"] == "system":
-            response += f"system: {msg['content']}\n"
+            response += f"{msg['content']}\n"
         if msg["role"] == "user":
-            response += f"user: {msg['content']}\n"
+            response += f"{msg['content']}\n"
         if msg["role"] == "assistant":
-            response += f"assistant: {msg['content']}\n"
+            response += f"{msg['content']}\n"
     return response
 
 

@@ -390,7 +390,7 @@ class Memory(MemoryBase):
             # Determine if this should use agent memory extraction based on agent_id presence
             # and role types in messages
             is_agent_memory = self._should_use_agent_memory_extraction(messages, metadata)
-            system_prompt, user_prompt = get_fact_retrieval_messages(parsed_messages, is_agent_memory)
+            system_prompt, user_prompt = get_fact_retrieval_messages(parsed_messages, metadata, is_agent_memory)
 
         response = self.llm.generate_response(
             messages=[
@@ -1297,7 +1297,6 @@ class AsyncMemory(MemoryBase):
         agent_id: Optional[str] = None,
         run_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        infer: bool = True,
         memory_type: Optional[str] = None,
         prompt: Optional[str] = None,
         llm=None,
@@ -1311,7 +1310,6 @@ class AsyncMemory(MemoryBase):
             agent_id (str, optional): ID of the agent creating the memory. Defaults to None.
             run_id (str, optional): ID of the run creating the memory. Defaults to None.
             metadata (dict, optional): Metadata to store with the memory. Defaults to None.
-            infer (bool, optional): Whether to infer the memories. Defaults to True.
             memory_type (str, optional): Type of memory to create. Defaults to None.
                                          Pass "procedural_memory" to create procedural memories.
             prompt (str, optional): Prompt to use for the memory creation. Defaults to None.
@@ -1354,7 +1352,7 @@ class AsyncMemory(MemoryBase):
             messages = parse_vision_messages(messages)
 
         vector_store_task = asyncio.create_task(
-            self._add_to_vector_store(messages, processed_metadata, effective_filters, infer)
+            self._add_to_vector_store(messages, processed_metadata, effective_filters)
         )
         graph_task = asyncio.create_task(self._add_to_graph(messages, effective_filters))
 
@@ -1373,43 +1371,8 @@ class AsyncMemory(MemoryBase):
         messages: list,
         metadata: dict,
         effective_filters: dict,
-        infer: bool,
     ):
-        if not infer:
-            returned_memories = []
-            for message_dict in messages:
-                if (
-                    not isinstance(message_dict, dict)
-                    or message_dict.get("role") is None
-                    or message_dict.get("content") is None
-                ):
-                    logger.warning(f"Skipping invalid message format (async): {message_dict}")
-                    continue
 
-                if message_dict["role"] == "system":
-                    continue
-
-                per_msg_meta = deepcopy(metadata)
-                per_msg_meta["role"] = message_dict["role"]
-
-                actor_name = message_dict.get("name")
-                if actor_name:
-                    per_msg_meta["actor_id"] = actor_name
-
-                msg_content = message_dict["content"]
-                msg_embeddings = await asyncio.to_thread(self.embedding_model.embed, msg_content, "add")
-                mem_id = await self._create_memory(msg_content, msg_embeddings, per_msg_meta)
-
-                returned_memories.append(
-                    {
-                        "id": mem_id,
-                        "memory": msg_content,
-                        "event": "ADD",
-                        "actor_id": actor_name if actor_name else None,
-                        "role": message_dict["role"],
-                    }
-                )
-            return returned_memories
 
         parsed_messages = parse_messages(messages)
         if self.config.custom_fact_extraction_prompt:
@@ -1419,7 +1382,7 @@ class AsyncMemory(MemoryBase):
             # Determine if this should use agent memory extraction based on agent_id presence
             # and role types in messages
             is_agent_memory = self._should_use_agent_memory_extraction(messages, metadata)
-            system_prompt, user_prompt = get_fact_retrieval_messages(parsed_messages, is_agent_memory)
+            system_prompt, user_prompt = get_fact_retrieval_messages(parsed_messages, metadata, is_agent_memory)
 
         response = await asyncio.to_thread(
             self.llm.generate_response,
