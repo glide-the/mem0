@@ -40,11 +40,11 @@ def parse_messages(messages):
     response = ""
     for msg in messages:
         if msg["role"] == "system":
-            response += f"{msg['content']}\n"
+            response += f"system: {msg['content']}\n"
         if msg["role"] == "user":
-            response += f"{msg['content']}\n"
+            response += f"user: {msg['content']}\n"
         if msg["role"] == "assistant":
-            response += f"{msg['content']}\n"
+            response += f"assistant: {msg['content']}\n"
     return response
 
 
